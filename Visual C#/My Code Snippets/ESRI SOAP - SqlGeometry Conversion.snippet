@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>SqlGeometryExtension</Title>
+      <Author>WSDOT</Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>
+      </Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>ExtensionClassName</ID>
+          <ToolTip>The name of the extension class</ToolTip>
+          <Default>SqlGeoemtryExtensions</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>EsriSoapNamespace</ID>
+          <ToolTip>The namespace you are using for the ESRI SOAP SDK.</ToolTip>
+          <Default>ESRI.ArcGIS.SOAP</Default>
+          <Function>
+          </Function>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp"><![CDATA[    using System;
+    using System.Collections.Generic;
+    using $EsriSoapNamespace$;
+    using Microsoft.SqlServer.Types;
+
+    public static class $ExtensionClassName$
+    {
+        /// <summary>
+        /// Converts a <see cref="PolygonN"/> object into a <see cref="SqlGeometry"/> object.
+        /// </summary>
+        /// <param name="geometry">The geometry to be converted.</param>
+        /// <param name="wkid">
+        /// The Well-Known ID of the Spatial Reference of <paramref name="geometry"/>.  
+        /// This parameter can be set to <see langword="null"/> if <paramref name="geometry"/>
+        /// has a non-null <see cref="Geometry.SpatialReference"/> property with a WKID.
+        /// </param>
+        /// <returns>A <see cref="SqlGeometry"/> object</returns>
+        public static SqlGeometry ToSqlGeometry(this PolygonN geometry, int? wkid)
+        {
+            if (geometry == null) throw new ArgumentNullException("geometry");
+            if (!wkid.HasValue)
+            {
+                SpatialReference sr = geometry.SpatialReference;
+                if (sr != null && sr.WKIDSpecified)
+                {
+                    wkid = sr.WKID;
+                }
+                else
+                {
+                    throw new ArgumentException("The wkid was not specified and the line did not contain wkid information");
+                }
+            }
+            SqlGeometryBuilder geoBuilder = new SqlGeometryBuilder();
+            geoBuilder.SetSrid(wkid.Value);
+            geoBuilder.BeginGeometry(OpenGisGeometryType.Polygon);
+            foreach (Ring path in geometry.RingArray)
+            {
+                geoBuilder.AddCurve(path, false);
+            }
+            geoBuilder.EndGeometry();
+            return geoBuilder.ConstructedGeometry;
+        }
+
+        /// <summary>
+        /// Converts a <see cref="PolylineN"/> object into a <see cref="SqlGeometry"/> object.
+        /// </summary>
+        /// <param name="geometry">The geometry to be converted.</param>
+        /// <param name="wkid">
+        /// The Well-Known ID of the Spatial Reference of <paramref name="geometry"/>.  
+        /// This parameter can be set to <see langword="null"/> if <paramref name="geometry"/>
+        /// has a non-null <see cref="Geometry.SpatialReference"/> property with a WKID.
+        /// </param>
+        /// <returns>A <see cref="SqlGeometry"/> object</returns>
+        public static SqlGeometry ToSqlGeometry(this PolylineN line, int? wkid)
+        {
+            if (line == null) throw new ArgumentNullException("line");
+
+            if (!wkid.HasValue)
+            {
+                SpatialReference sr = line.SpatialReference;
+                if (sr != null && sr.WKIDSpecified)
+                {
+                    wkid = sr.WKID;
+                }
+                else
+                {
+                    throw new ArgumentException("The wkid was not specified and the line did not contain wkid information");
+                }
+            }
+            SqlGeometryBuilder geoBuilder = new SqlGeometryBuilder();
+            geoBuilder.SetSrid(wkid.Value);
+            geoBuilder.BeginGeometry(OpenGisGeometryType.Polygon);
+            foreach (Path path in line.PathArray)
+            {
+                geoBuilder.AddCurve(path, true);
+            }
+            geoBuilder.EndGeometry();
+            return geoBuilder.ConstructedGeometry;
+        }
+
+        /// <summary>
+        /// Gets the spatial reference WKID from a <see cref="RecordSet"/>.
+        /// </summary>
+        /// <param name="recordSet">A <see cref="RecordSet"/> containing spatial data.</param>
+        /// <param name="geometryFieldIndex">
+        /// If you know ahead of time which field in <paramref name="recordSet"/> contains geometry, 
+        /// you can set that value here.  Otherwise you can set this to null and all of the fields will
+        /// be searched until a geometry field is found.
+        /// </param>
+        /// <returns></returns>
+        public static int GetWkid(this RecordSet recordSet, int? geometryFieldIndex)
+        {
+            SpatialReference sr = GetSpatialReference(recordSet, ref geometryFieldIndex);
+            return sr.WKID;
+        }
+
+        public static SpatialReference GetSpatialReference(this RecordSet recordSet, ref int? geometryFieldIndex)
+        {
+            Field[] fields = recordSet.Fields.FieldArray;
+            Field geoField = null;
+            // If the user explicitly specified the geometry field index, use that.
+            if (geometryFieldIndex.HasValue && fields.Length > geometryFieldIndex)
+            {
+                geoField = fields[geometryFieldIndex.Value];
+                if (geoField.Type != esriFieldType.esriFieldTypeGeometry) geoField = null;
+            }
+            // If the user didn't specify a geometry field index or they specified a field that wasn't really a geometry field, search for a geometry field.
+            if (geoField == null)
+            {
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    Field f = fields[i];
+                    if (f.Type == esriFieldType.esriFieldTypeGeometry)
+                    {
+                        geoField = f;
+                        geometryFieldIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            // If no geometry field was found...
+            if (geoField == null)
+            {
+                throw new ArgumentException("The record set does not appear to contain a geometry field, and is thus not supported by this method.", "recordSet");
+            }
+
+            SpatialReference sr = geoField.GeometryDef.SpatialReference;
+            if (!sr.WKIDSpecified)
+            {
+                throw new NotSupportedException("The Spatial Reference of this record set does not have a WKID and is thus not supported by this method.");
+            }
+            return sr;
+        }
+
+        private static void GetPointAndSegmentArrays(this Curve curve, out Point[] points, out Segment[] segments)
+        {
+            Path path = curve as Path;
+            if (path != null)
+            {
+                points = path.PointArray;
+                segments = path.SegmentArray;
+            }
+            else
+            {
+                Ring ring = curve as Ring;
+                points = ring.PointArray;
+                segments = ring.SegmentArray;
+            }
+        }
+
+        private static void AddCurve(this SqlGeometryBuilder geoBuilder, Curve curve, bool addAsNewGeometry)
+        {
+            if (addAsNewGeometry)
+            {
+                geoBuilder.BeginGeometry(OpenGisGeometryType.LineString); 
+            }
+            bool figBegun = false;
+
+            Point[] pointArray;
+            Segment[] segmentArray;
+
+            curve.GetPointAndSegmentArrays(out pointArray, out segmentArray);
+
+            if (pointArray != null)
+            {
+                foreach (PointN p in pointArray)
+                {
+                    if (!figBegun)
+                    {
+                        geoBuilder.BeginFigure(p);
+                        figBegun = true;
+                    }
+                    else
+                    {
+                        geoBuilder.AddPoint(p);
+                    }
+                }
+            }
+            else if (segmentArray != null)
+            {
+                foreach (Segment seg in segmentArray)
+                {
+                    if (!figBegun)
+                    {
+                        geoBuilder.BeginFigure(seg.FromPoint);
+                    }
+                    else
+                    {
+                        geoBuilder.AddPoint(seg.FromPoint);
+                    }
+                    geoBuilder.AddPoint(seg.ToPoint);
+                }
+            }
+            geoBuilder.EndFigure();
+            if (addAsNewGeometry)
+            {
+                geoBuilder.EndGeometry(); 
+            }
+        }
+
+        private static void AddPoints<T>(this SqlGeometryBuilder geoBuilder, IEnumerable<T> points) where T : Point
+        {
+            foreach (T p in points)
+            {
+                geoBuilder.AddPoint(p);
+            }
+        }
+
+        private static void BeginFigure(this SqlGeometryBuilder geoBuilder, Point point) 
+        {
+            PointN pointN = point as PointN;
+            if (pointN != null)
+            {
+                double? m = pointN.MSpecified ? pointN.M : new double?();
+                double? z = pointN.ZSpecified ? pointN.Z : new double?();
+                geoBuilder.BeginFigure(pointN.X, pointN.Y, z, m);
+            }
+            else
+            {
+                throw new NotSupportedException("Only points of type PointN are supported by this method.");
+            }
+        }
+
+        private static void AddPoint(this SqlGeometryBuilder geoBuilder, Point point)
+        {
+            PointN pointN = point as PointN;
+            if (pointN != null)
+            {
+                double? m = pointN.MSpecified ? pointN.M : new double?();
+                double? z = pointN.ZSpecified ? pointN.Z : new double?();
+                geoBuilder.AddLine(pointN.X, pointN.Y, z, m);
+            }
+            else
+            {
+                throw new NotSupportedException("Only points of type PointN are supported by this method.");
+            }
+        }
+    }]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

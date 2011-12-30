@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+     <CodeSnippet Format="1.0.0">
+          <Header><Title> Disposing pattern </Title>
+               <Description>Implement the disposing pattern with the corresponding finalizer (destructor).</Description>
+               <Keywords>
+                   <Keyword>Dispose</Keyword>
+                   <Keyword>Finalizer</Keyword>
+                   <Keyword>Destructor</Keyword>
+              </Keywords>
+              <Author>Anthony Trudeau</Author>
+         </Header>
+         <Snippet>
+         <Declarations>
+              <Literal Editable="true">
+                  <ID>ClassName</ID>
+                  <Function>ClassName()</Function>
+             </Literal>
+        </Declarations>
+        <Code Language="CSharp">
+            <![CDATA[~$ClassName$()
+{
+     Dispose(false);
+}
+
+public void Dispose()
+{
+     Dispose(true);
+     GC.SuppressFinalize(this);
+}
+
+private bool _disposed; // indicates if Dispose has been called
+
+private void Dispose(bool disposing)
+{
+     if (!_disposed)
+    {
+          if (disposing)
+         {
+              // TODO: cleanup managed resources in $ClassName$
+         }
+
+         // TODO: cleanup unmanaged resources in $ClassName$
+        _disposed = true;
+     }
+            }]]>
+        </Code>
+       </Snippet>
+    </CodeSnippet>
+</CodeSnippets>

@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <Header>
+      <Title>Property - Initialize on first access.</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>propFirstAccessInit</Shortcut>
+      <Description>A read-only property that initializes it's value the first time it is accessed.</Description>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>type</ID>
+          <ToolTip>Property type</ToolTip>
+          <Default>string</Default>
+        </Literal>
+        <Literal>
+          <ID>property</ID>
+          <ToolTip>Property name</ToolTip>
+          <Default>MyProperty</Default>
+        </Literal>
+        <Literal>
+          <ID>field</ID>
+          <ToolTip>The variable backing this property</ToolTip>
+          <Default>myVar</Default>
+        </Literal>
+        <Literal>
+          <ID>initialValue</ID>
+          <Default>string.Format(&quot;Now = {0:yyyy-MM-ddTHH:mm:ss}&quot;, DateTime.Now);</Default>
+          <ToolTip>The initial value of the property goes here.</ToolTip>
+        </Literal>
+        <Literal>
+          <ID>static</ID>
+          <Default>static</Default>
+          <ToolTip>Valid values: "static" or leave blank</ToolTip>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp">
+        <![CDATA[private $static$ $type$ $field$;
+
+public $static$ $type$ $property$ {
+    get {
+        if ($field$ == null) {
+            $field$ = $initialValue$
+        }
+        return $field$;
+    }
+}$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>&lt;see langword=&quot;selected&quot;/&gt;</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>langword</Shortcut>
+      <Description>Wraps a word in a &lt;see&gt; tag, with the selected text as the langword attribute.</Description>
+      <SnippetTypes>
+        <SnippetType>SurroundsWith</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Code Language="csharp">
+        <![CDATA[<see langword="$selected$"/>$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>String Comparison</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>stringComparison</Shortcut>
+      <Description>Compare two strings using the string.Compare method</Description>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="false">
+          <ID>string</ID>
+          <Function>SimpleTypeName(global::System.String)</Function>
+        </Literal>
+        <Object>
+          <ID>string1</ID>
+          <Type>System.String</Type>
+          <Default>"some text"</Default>
+          <ToolTip>One of the strings that will be compared to another.</ToolTip>
+        </Object>
+        <Object>
+          <ID>string2</ID>
+          <Type>System.String</Type>
+          <Default>"some other text"</Default>
+          <ToolTip>One of the strings that will be compared to another.</ToolTip>
+        </Object>
+        <Object>
+          <ID>ignoreCase</ID>
+          <Type>System.Boolean</Type>
+          <Default>true</Default>
+          <ToolTip>A boolean value that determines whether the case of the characters in the strings is ignored when they are compared.</ToolTip>
+        </Object>
+      </Declarations>
+      <Code Language="CSharp" Kind="method body">
+        <![CDATA[// if $string1$ == $string2$...
+if ($string$.Compare($string1$, $string2$, $ignoreCase$) == 0) {
+// Insert code
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+
+</CodeSnippets>

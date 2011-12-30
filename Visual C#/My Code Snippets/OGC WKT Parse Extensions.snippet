@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>OgcSimpleGeometryExtensions</Title>
+      <Author>Jeff Jacobson</Author>
+      <Description>A class that provides extension methods for parsing OGC Simple Geometry strings.
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>
+      </Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="false">
+          <ID>Regex</ID>
+          <ToolTip>The Regex class.</ToolTip>
+          <Default>Regex</Default>
+          <Function>SimpleTypeName(global::System.Text.RegularExpressions.Regex)</Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>Namespace</ID>
+          <ToolTip>The namespace that this class will be placed in.</ToolTip>
+          <Default>Geometry.Extensions</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>ClassName</ID>
+          <ToolTip>The name of the class.</ToolTip>
+          <Default>OgcSimpleGeometry</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>Match</ID>
+          <ToolTip>Match</ToolTip>
+          <Default>Match</Default>
+          <Function>SimpleTypeName(global::System.Text.RegularExpressions.Match)</Function>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp"><![CDATA[namespace $Namespace$
+{
+	using System.Collections.Generic;
+	using System.Text.RegularExpressions;
+    public static class $ClassName$Extensions
+    {
+        private const string _lineStringsRegexPattern = @"(?inx)
+(
+	\(
+	(?<linestring>
+		
+		(
+			# Individual point
+			# X
+			[-\d\.]+
+			\s+
+			# Y
+			[-\d\.]+
+			# Optional Z and M
+			(\s+
+				# Z
+				([-\d\.]+|(NULL))
+				# M
+				(\s+([-\d\.]+|(NULL)))?
+				
+			)?
+			(,\s*)?
+		)+
+	)
+	\)(,\s*)?
+)+";
+////        private const string _pointRegexPattern = @"(?inx)
+////(?<=POINT\s*\(\s*)			
+////	(?<x>\-?\d+(\.\d+)?)
+////	\s+
+////	(?<y>\-?\d+(\.\d+)?)
+////	# Optional Z and M
+////	(\s+
+////		# Z
+////		(?<z>(\-?\d+(\.\d+)?)|(NULL))
+////		# M
+////		(\s+
+////			(?<m>(\-?\d+(\.\d+)?)|(NULL))
+////		)?
+////		
+////	)?
+////(?=\s*\))";
+        private const string _pointRegexPattern = @"(?inx)
+	(?<x>\-?\d+(\.\d+)?)
+	\s+
+	(?<y>\-?\d+(\.\d+)?)
+	# Optional Z and M
+	(\s+
+		# Z
+		(?<z>(\-?\d+(\.\d+)?)|(NULL))
+		# M
+		(\s+
+			(?<m>(\-?\d+(\.\d+)?)|(NULL))
+		)?
+		
+	)?";
+
+        private readonly static $Regex$
+            _lineStringsRegex = new $Regex$(_lineStringsRegexPattern)
+            , _pointRegex = new $Regex$(_pointRegexPattern);
+
+
+        /// <summary>
+        /// This method attempts to parse an Open-Geospatial Consortium (OGC) Well-Known Text string
+        /// and convert it into a <see cref="PointN"/> object.
+        /// </summary>
+        /// <param name="wkt">The point definition string in OGC WKT format.</param>
+        /// <param name="point">The output point.</param>
+        /// <returns>Returns true if the parsing was successful, false otherwise.</returns>
+        public static bool TryParsePoint(this string wkt, out double?[] point)
+        {
+            $Match$ match = _pointRegex.Match(wkt);
+            return match.TryMatchToPoint(out point);
+        }
+
+        /// <summary>
+        /// This method attempts to parse an Open-Geospatial Consortium (OGC) Well-Known Text (WKT) string
+        /// and convert it into a <see cref="PointN"/> object.
+        /// </summary>
+        /// <param name="wkt">The point definition string in OGC WKT format.</param>
+        /// <param name="point">The output point.</param>
+        /// <returns>Returns true if the parsing was successful, false otherwise.</returns>
+        private static bool TryMatchToPoint(this $Match$ match, out double?[] point)
+        {
+            point = null;
+            double? x, y, z = null, m = null;
+            GroupCollection groups = match.Groups;
+            bool output = false;
+
+            // Extract the X and Y points.
+            Group g = groups["x"];
+            double tempD;
+
+            if (!(g.Success && double.TryParse(g.Value, out tempD)))
+            {
+                return false;
+            }
+            else
+            {
+                x = tempD;
+            }
+            g = groups["y"];
+            if (!(g.Success && double.TryParse(g.Value, out tempD)))
+            {
+                return false;
+            }
+            else
+            {
+                y = tempD;
+            }
+
+            output = true;
+
+            List<double?> coordList = new List<double?>(new double?[] { x, y }); //new PointN() { X = x, Y = y };
+
+
+            // Extract the Z and M points, if available.
+            g = groups["z"];
+            if (g.Success && double.TryParse(g.Value, out tempD))
+            {
+                z = tempD;
+            }
+
+            g = groups["m"];
+            if (g.Success && double.TryParse(g.Value, out tempD))
+            {
+                m = tempD;
+            }
+
+            coordList.Add(z);
+            coordList.Add(m);
+
+            point = coordList.ToArray();
+
+            return output;
+        }
+
+        /// <summary>
+        /// This method attempts to parse the multiple points that make up a line string in an OGC WKT geometry definition string.
+        /// </summary>
+        /// <param name="wkt">
+        /// An OGC WKT geometry definition string consisting of a single LINESTRING.  A WKT containing multiple LINESTRINGs 
+        /// will also parse successfully, but all points from all linestrings will be output into the same collection of points.
+        /// </param>
+        /// <param name="points">The output <see cref="PointN"/> object collection.</param>
+        /// <returns>Returns true if the conversion was successful, false otherwise.</returns>
+        public static bool TryParsePoints(this string wkt, out double?[][] points)
+        {
+            points = null;
+            MatchCollection mc = _pointRegex.Matches(wkt);
+            List<double?[]> output = new List<double?[]>();
+            foreach ($Match$ m in mc)
+            {
+                double?[] pt;
+                if (m.TryMatchToPoint(out pt))
+                {
+                    output.Add(pt);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            points = output.ToArray();
+            return true;
+        }
+
+        /// <summary>
+        /// This method will attempt to parse an OGC WKT string into a Polyline.
+        /// </summary>
+        /// <param name="wkt">An OGC WKT LINESTRING or MULTILINESTRING definition.</param>
+        /// <param name="line">The output <see cref="PolylineN"/> object.</param>
+        /// <returns>Returns true if the conversion was successful, false otherwise.</returns>
+        public static bool TryParseLineStrings(this string wkt, out double?[][][] line)
+        {
+            line = null;
+            if (string.IsNullOrEmpty(wkt)) return false;
+
+            $Match$ match = _lineStringsRegex.Match(wkt);
+            if (!match.Success) return false;
+
+            List<double?[][]> paths = new List<double?[][]>();
+
+            GroupCollection gc = match.Groups;
+            foreach (Group g in gc)
+            {
+                double?[][] points;
+                if (g.Value.TryParsePoints(out points))
+                {
+                    paths.Add(points);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            line = paths.ToArray();
+            return true;
+        }
+    }
+}
+]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

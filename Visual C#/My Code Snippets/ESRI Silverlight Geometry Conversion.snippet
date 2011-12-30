@@ -1,0 +1,321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>ESRI Silverlight Geometry Conversion</Title>
+      <Author>WSDOT</Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>esriSilverlightConversion</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>namespace</ID>
+          <ToolTip>The namespace that this class is in</ToolTip>
+          <Default>Wsdot.Gis.Conversion.Esri.Silverlight</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>ClassName</ID>
+          <ToolTip>The name of this extension class.</ToolTip>
+          <Default>OgcExtensions</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>Geometry</ID>
+          <ToolTip>
+          </ToolTip>
+          <Default>
+          </Default>
+          <Function>SimpleTypeName(ESRI.ArcGIS.Client.Geometry.Geometry)</Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>MapPoint</ID>
+          <ToolTip>
+          </ToolTip>
+          <Default>
+          </Default>
+          <Function>SimpleTypeName(ESRI.ArcGIS.Client.Geometry.MapPoint)</Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>Polyline</ID>
+          <ToolTip>
+          </ToolTip>
+          <Default>
+          </Default>
+          <Function>SimpleTypeName(ESRI.ArcGIS.Client.Geometry.Polyline)</Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>Polygon</ID>
+          <ToolTip>
+          </ToolTip>
+          <Default>
+          </Default>
+          <Function>SimpleTypeName(ESRI.ArcGIS.Client.Geometry.Polygon)</Function>
+        </Literal>
+        <Literal Editable="false">
+          <ID>Envelope</ID>
+          <ToolTip>
+          </ToolTip>
+          <Default>
+          </Default>
+          <Function>SimpleTypeName(ESRI.ArcGIS.Client.Geometry.Envelope)</Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>MultiPoint</ID>
+          <ToolTip>MultiPoint</ToolTip>
+          <Default>MultiPoint</Default>
+          <Function>SimpleTypeName(ESRI.ArcGIS.Client.Geometry.MultiPoint)</Function>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp"><![CDATA[namespace $namespace$
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using ESRI.ArcGIS.Client.Geometry;
+
+    public static class $ClassName$
+    {
+                /// <summary>
+				/// This regular expression matches an OGC WKT POLYGON definition corresponding to a rectangle.
+				/// </summary>
+				static readonly Regex _ogcWktRectangeRegex = new Regex(@"(?inx)
+# A rectangle can be defined by just two corner points.
+#  
+# XMin, YMax         XMax, YMax
+# .------------------o
+# |     -->          |
+# |                | |
+# | /\             | |
+# | |             \ /|
+# |     <--          |
+# o------------------.
+# XMin, YMin         XMax, YMin
+
+^POLYGON\(\(
+	(?<FirstCoord>(?<XMin>\-?\d+(\.\d+)?)\s+(?<YMin>\-?\d+(\.\d+)?))
+	\s*,\s*
+	\k<XMin>\s+(?<YMax>\-?\d+(\.\d+)?)
+	\s*,\s*
+	(?<XMax>\-?\d+(\.\d+)?)\s+\k<YMax>
+	\s*,\s*
+	\k<XMax>\s+\k<YMin>
+	\s*,\s*
+	\k<FirstCoord>
+\)\)$");
+        /// <summary>
+        /// Converts a <see cref="$Geometry$"/> into an Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/>.
+        /// </summary>
+        /// <param name="geometry">A <see cref="$Geometry$"/> object.</param>
+        /// <param name="srWkid">The Well-Known Identifier (WKID) of the <see cref="$Geometry$.SpatialReference">spatial reference system</see> of <paramref name="geometry"/>.</param>
+        /// <returns>An Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/> representation of <paramref name="geometry"/>.</returns>
+        public static string ToOgcWkt(this $Geometry$ geometry, out int? srWkid)
+        {
+            if (geometry == null) throw new ArgumentNullException("geometry");
+            Type t = geometry.GetType();
+            if (t == typeof($MapPoint$))
+            {
+                return (geometry as $MapPoint$).ToOgcWkt(out srWkid);
+            }
+            else if (t == typeof($MultiPoint$))
+            {
+                $MultiPoint$ mp = geometry as $MultiPoint$;
+                srWkid = mp.SpatialReference != null ? mp.SpatialReference.WKID : default(int?);
+                return string.Format("MULTIPOINT({0}", mp.Points.ToOgcWktInner());
+            }
+            else if (t == typeof($Envelope$))
+            {
+                return (geometry as $Envelope$).ToOgcWkt(out srWkid);
+            }
+            else if (t == typeof($Polyline$))
+            {
+                return (geometry as $Polyline$).ToOgcWkt(out srWkid);
+            }
+            else if (t == typeof($Polygon$))
+            {
+                return (geometry as $Polygon$).ToOgcWkt(out srWkid);
+            }
+            else
+            {
+                throw new NotSupportedException("This type of geometry is not supported.");
+            }
+        }
+
+        /// <summary>
+        /// Converts a <see cref="$MapPoint$"/> into an Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/>.
+        /// </summary>
+        /// <param name="point">A <see cref="$MapPoint$"/> object.</param>
+        /// <param name="srWkid">The Well-Known Identifier (WKID) of the <see cref="$Geometry$.SpatialReference">spatial reference system</see> of <paramref name="point"/>.</param>
+        /// <returns>An Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/> representation of <paramref name="point"/>.</returns>
+        public static string ToOgcWkt(this $MapPoint$ point, out int? srWkid)
+        {
+            StringBuilder sb = new StringBuilder("POINT(");
+            sb.AppendFormat("{0} {1})", point.X, point.Y);
+            srWkid = point.SpatialReference != null ? point.SpatialReference.WKID : default(int?);
+            return sb.ToString();
+        }
+
+
+
+        /// <summary>
+        /// Converts a <see cref="$Polyline$"/> into an Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/>.
+        /// </summary>
+        /// <param name="line">A <see cref="$Polyline$"/> object.</param>
+        /// <param name="srWkid">The Well-Known Identifier (WKID) of the <see cref="$Geometry$.SpatialReference">spatial reference system</see> of <paramref name="line"/>.</param>
+        /// <returns>An Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/> representation of <paramref name="line"/>.</returns>
+        public static string ToOgcWkt(this $Polyline$ line, out int? srWkid)
+        {
+            // Set the Spatial Reference WKID.
+            srWkid = line.SpatialReference != null ? line.SpatialReference.WKID : default(int?);
+            return string.Format("LINESTRING{0}", line.Paths.ToOgcWktInner());
+        }
+
+        /// <summary>
+        /// Converts a <see cref="$Polygon$"/> into an Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/>.
+        /// </summary>
+        /// <param name="polygon">A <see cref="$Polygon$"/> object.</param>
+        /// <param name="srWkid">The Well-Known Identifier (WKID) of the <see cref="$Geometry$.SpatialReference">spatial reference system</see> of <paramref name="polygon"/>.</param>
+        /// <returns>An Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/> representation of <paramref name="polygon"/>.</returns>
+        public static string ToOgcWkt(this $Polygon$ polygon, out int? srWkid)
+        {
+            // Set the Spatial Reference WKID.
+            srWkid = polygon.SpatialReference != null ? polygon.SpatialReference.WKID : default(int?);
+            return string.Format("POLYGON({0})", polygon.Rings.ToOgcWktInner());
+        }
+
+        /// <summary>
+        /// Converts a <see cref="$Envelope$"/> into an Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/>.
+        /// </summary>
+        /// <param name="envelope">A <see cref="$Envelope$"/> object.</param>
+        /// <param name="srWkid">The Well-Known Identifier (WKID) of the <see cref="$Geometry$.SpatialReference">spatial reference system</see> of <paramref name="envelope"/>.</param>
+        /// <returns>An Open Geospatial Consortium (OGC) Well-Known Text (WKT) <see cref="string"/> representation of <paramref name="envelope"/>.</returns>
+        public static string ToOgcWkt(this $Envelope$ envelope, out int? srWkid)
+        {
+            // Set the Spatial Reference WKID.
+            srWkid = envelope.SpatialReference != null ? envelope.SpatialReference.WKID : default(int?);
+
+            /*
+             A rectangle can be defined by just two corner points.
+              
+             XMin, YMax         XMax, YMax
+             .------------------o
+             |                  |
+             |                  |
+             |                  |
+             |                  |
+             |                  |
+             o------------------.
+             XMin, YMin         XMax, YMin
+             
+             0 = XMin
+             1 = YMin
+             2 = XMax
+             3 = YMax
+            */
+            return string.Format("POLYGON(({0} {1}, {0} {3}, {2} {3}, {2} {1}, {0} {1}))", 
+                envelope.XMin, envelope.YMin, envelope.XMax, envelope.YMax);
+            
+
+        }
+
+        /// <summary>
+        /// Converts a list of <see cref="$MapPoint$"/> objects into a comma separated list of OGC points.
+        /// (X and Y coordinates a separated by a space).
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        internal static string ToOgcWktInner(this IEnumerable<$MapPoint$> points)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < points.Count(); i++)
+            {
+                $MapPoint$ p = points.ElementAt(i);
+                if (i > 0)
+                {
+                    sb.Append(',');
+                }
+                sb.AppendFormat("{0} {1}", p.X, p.Y);
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Converts collections of points into a string.  
+        /// Each point collection is represented by a comma separated list of points.
+        /// Each point is a space separated pair of coordinates.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pointCollections"></param>
+        /// <returns></returns>
+        internal static string ToOgcWktInner<T>(this IEnumerable<T> pointCollections) where T : IEnumerable<$MapPoint$>
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < pointCollections.Count(); i++)
+            {
+                T pc = pointCollections.ElementAt(i);
+                if (i > 0)
+                {
+                    sb.Append(",");
+                }
+                sb.AppendFormat("({0})", pc.ToOgcWktInner());
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Converts an OGC WKT polygon definition string into an envelope.
+        /// </summary>
+        /// <param name="ogcWkt">A polygon WKT string defining an envelope.</param>
+        /// <param name="srWkid">The spatial reference system used by the envelope.</param>
+        /// <returns></returns>
+        /// <exception cref="FormatException">
+        /// Thrown if <paramref name="ogcWkt"/> is not a validly-formatted WKT string that defines a rectangle.
+        /// </exception>
+        public static Envelope OgcWktToEnvelope(this string ogcWkt, int? srWkid)
+        {
+            Match match = _ogcWktRectangeRegex.Match(ogcWkt);
+            if (match == null || !match.Success)
+            {
+                throw new FormatException("The input string was not a proper OGC WKT representation of a rectangle.");
+            }
+            double xMin, yMin, xMax, yMax;
+            match.GetCoordinates(out xMin, out yMin, out xMax, out yMax);
+            Envelope output = new Envelope(xMin, yMin, xMax, yMax);
+            if (srWkid.HasValue)
+            {
+                output.SpatialReference = new SpatialReference(srWkid.Value);
+            }
+            return output;
+        }
+
+        private static void GetCoordinates(this Match match, out double xMin, out double yMin, out double xMax, out double yMax) 
+        {
+            GroupCollection groups = match.Groups;
+            xMin = double.Parse(groups["XMin"].Value);
+            yMin = double.Parse(groups["YMin"].Value);
+            xMax = double.Parse(groups["XMax"].Value);
+            yMax = double.Parse(groups["YMax"].Value);
+
+            ////double.TryParse(groups["XMin"].Value, out xMin);
+            ////double.TryParse(groups["YMin"].Value, out yMin);
+            ////double.TryParse(groups["XMax"].Value, out xMax);
+            ////double.TryParse(groups["YMax"].Value, out yMax);
+        }
+
+
+    }
+}
+]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

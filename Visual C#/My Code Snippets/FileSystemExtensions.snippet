@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodDirectoryInfoeSnippet">
+  <Header>
+    <Title>File System Extensions</Title>
+    <Author>Jeff Jacobson</Author>
+    <Shortcut>fsx</Shortcut>
+    <Description>Extension methods for file system</Description>
+    <SnippetTypes>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>className</ID>
+        <Default>FileSystemExtensions</Default>
+      </Literal>
+      <Literal>
+        <ID>DirectoryInfo</ID>
+        <Function>SimpleTypeName(global::System.IO.DirectoryInfo)</Function>
+      </Literal>
+      <Literal>
+        <ID>FileInfo</ID>
+        <Function>SimpleTypeName(global::System.IO.FileInfo)</Function>
+      </Literal>
+      <Literal>
+        <ID>IEnumerable</ID>
+        <Function>SimpleTypeName(global::System.Collections.Generic.IEnumerable)</Function>
+      </Literal>
+      <Literal>
+        <ID>SearchOption</ID>
+        <Function>SimpleTypeName(global::System.IO.SearchOption)</Function>
+      </Literal>
+      <Literal>
+        <ID>Regex</ID>
+        <Function>SimpleTypeName(global::System.Text.RegularExpressions.Regex)</Function>
+      </Literal>
+      <Literal>
+        <ID>Action</ID>
+        <Function>SimpleTypeName(global::System.Action)</Function>
+      </Literal>
+    </Declarations>
+    <Code Language="CSharp">
+      <![CDATA[
+    public static class $className$
+    {
+        /// <summary>
+        /// Walks the file system, similar to Python's os.walk function.
+        /// </summary>
+        /// <param name="root">The root directory where the walking starts.</param>
+        /// <param name="handler">A function that will be invoked for each directory.</param>
+        /// <param name="searchRegex">A regular expression used to filter the list of files.  If a value is provided, <paramref name="searchPattern"/> will be ignored.</param>
+        /// <param name="searchPattern">The search pattern used to limit the files and directories.</param>
+        /// <param name="searchOption">Option to use when searching files and directories.</param>
+        /// <param name="searchPatternAppliesToDirectories">Determines if the <paramref name="searchPattern"/> and <paramref name="searchOption"/> are used on only the files or both the files and directories.</param>
+        /// <example><code>static void AddToFileList($DirectoryInfo$ root, $DirectoryInfo$[] directories, $FileInfo$[] files)
+        /// {
+        ///     foreach (var file in files)
+        ///     {
+        ///         Console.WriteLine(file.FullName);
+        ///     }
+        /// }
+        /// 
+        /// static void Main(string[] args)
+        /// {
+        ///     var root = new $DirectoryInfo$(@"C:\temp");
+        ///     root.Walk(AddToFileList);
+        /// }</code></example>
+        public static void Walk(this $DirectoryInfo$ root, $Action$<$DirectoryInfo$, $IEnumerable$<$DirectoryInfo$>, $IEnumerable$<$FileInfo$>> handler, $Regex$ searchRegex = null,
+            string searchPattern = null, $SearchOption$ searchOption = $SearchOption$.AllDirectories, bool searchPatternAppliesToDirectories = false)
+        {
+            if (root == null)
+            {
+                throw new ArgumentNullException("directory");
+            }
+            $IEnumerable$<$DirectoryInfo$> directories = !searchPatternAppliesToDirectories || (searchRegex != null && searchPattern == null) ? root.GetDirectories() 
+                : searchRegex != null ? root.GetDirectories().Where(d => searchRegex.IsMatch(d.Name))
+                : root.GetDirectories(searchPattern, searchOption);
+            $IEnumerable$<$FileInfo$> files = searchRegex == null && searchPattern == null ? root.GetFiles() 
+                : searchRegex != null ? root.GetFiles().Where(f => searchRegex.IsMatch(f.Name)) 
+                : root.GetFiles(searchPattern, searchOption);
+
+            handler.Invoke(root, directories, files);
+
+            foreach (var d in directories)
+            {
+                d.Walk(handler, searchRegex, searchPattern, searchOption);
+            }
+        }
+    }
+]]>
+    </Code>
+  </Snippet>
+</CodeSnippet>

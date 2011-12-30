@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <Title>ArcGIS customization installer class</Title>
+    <Author>Jeff Jacobson</Author>
+    <Shortcut>arcGisInstaller</Shortcut>
+    <Description>An installer class for an assembly containing an ArcGIS customization.</Description>
+    <SnippetTypes>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>Class</ID>
+        <Default>My</Default>
+      </Literal>
+      <Literal>
+        <ID>Namespace</ID>
+        <Default>MyNamespace</Default>
+      </Literal>
+    </Declarations>
+    <Code Language ="CSharp" Kind="file">
+      <![CDATA[using System;
+using System.Collections;
+using System.ComponentModel;
+using System.Configuration.Install;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+namespace $Namespace$ {
+	/// <summary>
+	/// Registers and unregisters COM components during installation.
+	/// </summary>
+	[RunInstaller(true)]
+	public class $Class$Installer : Installer {
+		/// <summary>
+		/// Installer constructor.
+		/// </summary>
+		public $Class$Installer() {
+		}
+
+		#region Install/Uninstall Methods
+		/// <summary>
+		/// Registers COM Component.
+		/// </summary>
+		/// <param name="stateSaver">An <see cref="IDictionary"/> used to save information needed to perform a commit, rollback, or uninstall operation.</param>
+		public override void Install(IDictionary stateSaver) {
+			RegistrationServices regSrv = new RegistrationServices();
+
+			try {
+				base.Install (stateSaver);
+
+				if (!regSrv.RegisterAssembly(base.GetType().Assembly, AssemblyRegistrationFlags.SetCodeBase)) {
+					ThrowInstallException(InstallOperation.Install);
+				}
+			} catch (Exception ex) {
+				MessageBox.Show(ex.Message, "Install Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+  
+		/// <summary>
+		/// Unregisters COM component.
+		/// </summary>
+		/// <param name="savedState">An <see cref="IDictionary"/> that contains the state of the computer after the installation was complete.</param>
+		public override void Uninstall(IDictionary savedState) {
+			RegistrationServices regSrv = new RegistrationServices();
+
+			try {
+				base.Uninstall (savedState);
+
+				if (!regSrv.UnregisterAssembly(base.GetType().Assembly)) {
+					ThrowInstallException(InstallOperation.Uninstall);
+				}
+			} catch (Exception ex) {
+				MessageBox.Show(ex.Message, "Uninstall Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+		#endregion Install/Uninstall Methods
+
+		/// <summary>
+		/// Throws an InstallException with a different message based on its <see cref="InstallOperation"/>.
+		/// </summary>
+		/// <param name="instOp">Whether the application is being <see cref="InstallOperation.Install">installed</see> or <see cref="InstallOperation.Uninstall">uninstalled</see>.</param>
+		/// <exception cref="InstallException">An InstallException is always thrown.</exception>
+		private static void ThrowInstallException(InstallOperation instOp) {
+			const string FORMAT = "COM {0}registration failed.  Some or all of the application classes are not properly {1} the ESRI component categories.";
+			string un = instOp == InstallOperation.Install ? string.Empty : "un";
+			string action = instOp == InstallOperation.Install ? "registered in" : "removed from";
+			string message = string.Format(FORMAT, un, action);
+			throw new InstallException(message);
+		}
+		
+		/// <summary>
+		/// An enumeration representing either installation or uninstallation.
+		/// </summary>
+		private enum InstallOperation {
+			Install = 0,
+			Uninstall = 1
+		}
+	}
+}
+]]>
+    </Code>
+  </Snippet>
+</CodeSnippet>
+

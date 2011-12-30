@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <Title>State Route Extension Methods</Title>
+    <Author>Jeff Jacobson</Author>
+    <Shortcut>srext</Shortcut>
+    <Description>A class that provides extension methods for dealing with Washington State Route ID strings.</Description>
+    <SnippetTypes>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>className</ID>
+        <Default>StateRouteExtensions</Default>
+      </Literal>
+      <Literal>
+        <ID>regexVarName</ID>
+        <Default>_srRegex</Default>
+      </Literal>
+      <Literal>
+        <ID>SimpleRegex</ID>
+        <Function>SimpleTypeName(global::System.Text.RegularExpressions.Regex)</Function>
+      </Literal>
+      <Literal>
+        <ID>SimpleDictionary</ID>
+        <Function>SimpleTypeName(global::System.Collections.Generic.Dictionary)</Function>
+      </Literal>
+      <Literal>
+        <ID>SimpleList</ID>
+        <Function>SimpleTypeName(global::System.Collections.Generic.List)</Function>
+      </Literal>
+    </Declarations>
+    <Code Language="CSharp">
+  <![CDATA[
+/// <summary>
+/// Provides extension methods for state route identifiers.
+/// </summary>
+public static class $className$
+{
+  /// <summary>
+  /// Matches a State Route ID and captures the SR, RRT, and RRQ.  Also matches an SR without an RRT or RRQ.
+  /// </summary>
+  private static readonly $SimpleRegex$ $regexVarName$ = new Regex(@"(?<sr>\d{3})(?:(?<rrt>[A-Za-z0-9]{2})(?<rrq>[A-Za-z0-9]{0,6}))?");
+
+
+  /// <summary>
+  /// Parses a state route identifier into its component SR, RRT, and RRQ components.
+  /// </summary>
+  /// <param name="srRrtRrq">A state route identifier, including RRT and RRQ info if applicable.</param>
+  /// <param name="sr">The SR component of <paramref name="srRrtRrq"/>.</param>
+  /// <param name="rrt">The RRT component of <paramref name="srRrtRrq"/>.</param>
+  /// <param name="rrq">The RRQ component of <paramref name="srRrtRrq"/>.</param>
+  /// <returns>Returns <see langword="true"/> if <paramref name="srRrtRrq"/> is a valid state route identifier, <see langword="false"/> otherwise.</returns>
+  public static bool TryParse(this string srRrtRrq, out string sr, out string rrt, out string rrq)
+  {
+    // Initialize out parameters.
+    sr = rrt = rrq = null;
+
+    if (srRrtRrq == null)
+    {
+      return false;
+    }
+
+    var srMatch = _srRegex.Match(srRrtRrq);
+    if (!srMatch.Success)
+    {
+      return false;
+    }
+
+    var groups = srMatch.Groups;
+    sr = groups["sr"].Value;
+    rrt = groups["rrt"].Value;
+    rrq = groups["rrq"].Value;
+
+    return true;
+  }
+
+  /// <summary>
+  /// Sorts SR, RRT, and RRQs into groups.
+  /// </summary>
+  /// <param name="routes"></param>
+  /// <returns></returns>
+  public static $SimpleDictionary$<string, Dictionary<string, List<string>>> CategorizeRoutes(this IEnumerable<string> routes)
+  {
+    var output = new $SimpleDictionary$<string, $SimpleDictionary$<string, $SimpleList$<string>>>();
+    string sr, rrt, rrq;
+
+    foreach (string route in routes)
+    {
+      if (route.TryParse(out sr, out rrt, out rrq))
+      {
+        // Get the dictionary keyed by SR.
+        $SimpleDictionary$<string, $SimpleList$<string>> rrtDict;
+        if (output.ContainsKey(sr))
+        {
+          rrtDict = output[sr];
+        }
+        else
+        {
+          rrtDict = new $SimpleDictionary$<string, List<string>>();
+          output.Add(sr, rrtDict);
+        }
+
+        // Get the rrq list.
+        $SimpleList$<string> rrqList;
+        if (rrtDict.ContainsKey(rrt))
+        {
+          rrqList = rrtDict[rrt];
+        }
+        else
+        {
+          rrqList = new $SimpleList$<string>();
+          rrtDict.Add(rrt, rrqList);
+        }
+        if (!rrqList.Contains(rrq))
+        {
+          rrqList.Add(rrq);
+        }
+      }
+    }
+
+    return output;
+  }
+}
+    ]]></Code>
+  </Snippet>
+</CodeSnippet>
+

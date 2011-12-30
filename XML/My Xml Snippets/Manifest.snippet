@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Application Manifest</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>AppManifest</Shortcut>
+      <Description>Application Manifest</Description>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>Assembly Name</ID>
+          <Default>myOrganization.myDivision.myComApp</Default>
+        </Literal>
+        <Literal>
+          <ID>Assembly Version</ID>
+          <Default>1.0.0.0</Default>
+        </Literal>
+        <Literal>
+          <ID>Assembly Processor Architecture</ID>
+          <Default>x86</Default>
+        </Literal>
+        <Literal>
+          <ID>Assembly Public Key Token</ID>
+          <Default>8275b28176rcbbef</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="XML" Kind="file">
+        <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity type="win32" 
+                    name="$Assembly Name$" 
+                    version="$Assembly Version$" 
+                    processorArchitecture="$Assembly Processor Architecture$" 
+                    publicKeyToken="$Assembly Public Key Token$"
+  />
+<!--  
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity type="win32" 
+                    name="myOrganization.myDivision.myManagedComp" 
+                    version="6.0.0.0" 
+                    processorArchitecture="$Assembly Processor Architecture$" 
+                    publicKeyToken="$Assembly Public Key Token$"
+                    language="*"
+      />
+    </dependentAssembly>
+  </dependency>
+  -->
+</assembly>
+]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Application Manifest Dependent Assembly</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>AppManifestDependentAssembly</Shortcut>
+      <Description>Application Manifest</Description>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>Assembly Name</ID>
+          <Default>myOrganization.myDivision.myComApp</Default>
+        </Literal>
+        <Literal>
+          <ID>Assembly Version</ID>
+          <Default>1.0.0.0</Default>
+        </Literal>
+        <Literal>
+          <ID>Assembly Processor Architecture</ID>
+          <Default>x86</Default>
+        </Literal>
+        <Literal>
+          <ID>Assembly Public Key Token</ID>
+          <Default>8275b28176rcbbef</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="XML">
+        <![CDATA[<dependentAssembly>
+  <assemblyIdentity type="win32" 
+                    name="$Assembly Name$" 
+                    version="$Assembly Version$" 
+                    processorArchitecture="$Assembly Processor Architecture$" 
+                    publicKeyToken="$Assembly Public Key Token$"
+      />
+    </dependentAssembly>]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Component Manifest</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>ComponentManifest</Shortcut>
+      <Description>See http://msdn2.microsoft.com/en-us/library/eew13bza.aspx</Description>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>AsmName</ID>
+          <Default>myOrganization.myDivision.myManagedComp</Default>
+        </Literal>
+        <Literal>
+          <ID>AsmVersion</ID>
+          <Default>1.2.3.4</Default>
+        </Literal>
+        <Literal>
+          <ID>AsmPubKeyToken</ID>
+          <Default>8275b28176rcbbef</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="XML" Kind="file">
+        <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Based on info from http://msdn2.microsoft.com/en-us/library/eew13bza.aspx -->
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+               name="$asmName$"
+               version="$AsmVersion$" 
+               publicKeyToken="$AsmPubKeyToken$"/>
+  <clrClass
+               clsid="{65722BE6-3449-4628-ABD3-74B6864F9739}"
+               progid="myManagedComp.testClass1"
+               threadingModel="Both"
+               name="myManagedComp.testClass1"
+               runtimeVersion="v1.0.3705">
+  </clrClass>
+  <file name="MyManagedComp.dll">
+  </file>
+</assembly>]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Component Manifest CLR Class Definition</Title>
+      <Author>Jeff Jacobson</Author>
+      <Shortcut>clrClass</Shortcut>
+      <Description>Component Manifest CLR Class Definition</Description>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>clsid</ID>
+          <Default>{65722BE6-3449-4628-ABD3-74B6864F9739}</Default>
+        </Literal>
+        <Literal>
+          <ID>progid</ID>
+          <Default>myManagedComp.testClass1</Default>
+        </Literal>
+        <Literal>
+          <ID>threadingModel</ID>
+          <Default>Both</Default>
+        </Literal>
+        <Literal>
+          <ID>name</ID>
+          <Default>myManagedComp.testClass1</Default>
+        </Literal>
+        <Literal>
+          <ID>runtimeVersion</ID>
+          <Default>v2.0.50727</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="XML">
+        <![CDATA[<clrClass
+               clsid="$clsid$"
+               progid="$progid$"
+               threadingModel="$threadingModel$"
+               name="$name$"
+               runtimeVersion="$runtimeVersion$">
+  </clrClass>]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+</CodeSnippets>
+

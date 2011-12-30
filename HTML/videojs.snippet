@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <Title>VideoJS</Title>
+    <Author>Jeff Jacobson</Author>
+    <Shortcut>videojs</Shortcut>
+    <Description>Inserts HTML for video with VideoJS</Description>
+    <SnippetTypes>
+      <SnippetType>SurroundsWith</SnippetType>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>width</ID>
+        <Default>640</Default>
+        <ToolTip>The width of your video.</ToolTip>
+      </Literal>
+      <Literal>
+        <ID>height</ID>
+        <Default>480</Default>
+        <ToolTip>The height of your video.</ToolTip>
+      </Literal>
+      <Literal>
+        <ID>videoName</ID>
+        <Default>http://example.com/sample-video</Default>
+        <ToolTip>The path to the video file, minus the extension. (This assumes all of the different types of videos have the same name except for their extensions.)</ToolTip>
+      </Literal>
+      <Literal>
+        <ID>swfplayer</ID>
+        <Default>http://releases.flowplayer.org/swf/flowplayer-3.2.1.swf</Default>
+        <ToolTip>The Flash player that will be used to play the MP4 video when the browser does not support the video tag.</ToolTip>
+      </Literal>
+    </Declarations>
+    <Code Language="html">
+      <![CDATA[<!-- Begin VideoJS -->
+  <div class="video-js-box">
+    <!-- Using the Video for Everybody Embed Code http://camendesign.com/code/video_for_everybody -->
+    <video class="video-js" width="$width$" height="$height$" controls="controls" preload="auto" poster="$videoName$.png">
+      <source src="$videoName$.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+      <source src="$videoName$.webm" type='video/webm; codecs="vp8, vorbis"' />
+      <source src="$videoName$.ogv" type='video/ogg; codecs="theora, vorbis"' />
+      <!-- Flash Fallback. Use any flash video player here. Make sure to keep the vjs-flash-fallback class. -->
+      <object id="flash_fallback_1" class="vjs-flash-fallback" width="$width$" height="$height$" type="application/x-shockwave-flash"
+        data="$swfplayer$">
+        <param name="movie" value="$swfplayer$" />
+        <param name="allowfullscreen" value="true" />
+        <param name="flashvars" value='config={"playlist":["$videoName$.png", {"url": "$videoName$.mp4","autoPlay":false,"autoBuffering":true}]}' />
+        <!-- Image Fallback. Typically the same as the poster image. -->
+        <img src="$videoName$.png" width="$width$" height="$height$" alt="Poster Image"
+          title="No video playback capabilities." />
+      </object>
+    </video>
+    <!-- Download links provided for devices that can't play video in the browser. -->
+    <p class="vjs-no-video"><strong>Download Video:</strong>
+      <a href="$videoName$.mp4">MP4</a>,
+      <a href="$videoName$.webm">WebM</a>,
+      <a href="$videoName$.ogv">Ogg</a><br>
+      <!-- Support VideoJS by keeping this link. -->
+      <a href="http://videojs.com">HTML5 Video Player</a> by VideoJS
+    </p>
+  </div>
+  <!-- End VideoJS -->]]>
+    </Code>
+  </Snippet>
+</CodeSnippet>

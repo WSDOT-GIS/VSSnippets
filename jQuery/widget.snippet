@@ -1,0 +1,33 @@
+﻿<CodeSnippet Format="1.1.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <Title>jQuery UI Widget</Title>
+    <Author>Jeff Jacobson</Author>
+    <Shortcut>widget</Shortcut>
+    <Description>jQuery UI Widget</Description>
+    <SnippetTypes>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>name</ID>
+        <ToolTip>Widget Name</ToolTip>
+        <Default>myWidget</Default>
+      </Literal>
+    </Declarations>
+    <Code Language="jscript">
+      <![CDATA[$$.widget("ui.$name$", {
+        options: {
+        },
+        _create: function () {
+            var $$this = this;
+            
+            return this;
+        },
+        _destroy: function () {
+            $$.Widget.prototype.destroy.apply(this, arguments);
+        }
+    });]]></Code>
+  </Snippet>
+</CodeSnippet>
