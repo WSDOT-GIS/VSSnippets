@@ -1,33 +1,55 @@
 ﻿<CodeSnippet Format="1.1.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
-  <Header>
-    <Title>jQuery UI Widget</Title>
-    <Author>Jeff Jacobson</Author>
-    <Shortcut>widget</Shortcut>
-    <Description>jQuery UI Widget</Description>
-    <SnippetTypes>
-      <SnippetType>Expansion</SnippetType>
-    </SnippetTypes>
-  </Header>
-  <Snippet>
-    <Declarations>
-      <Literal>
-        <ID>name</ID>
-        <ToolTip>Widget Name</ToolTip>
-        <Default>myWidget</Default>
-      </Literal>
-    </Declarations>
-    <Code Language="jscript">
-      <![CDATA[$$.widget("ui.$name$", {
-        options: {
-        },
-        _create: function () {
-            var $$this = this;
-            
-            return this;
-        },
-        _destroy: function () {
-            $$.Widget.prototype.destroy.apply(this, arguments);
-        }
-    });]]></Code>
-  </Snippet>
+	<!--For details on creating a jQuery mobile widget, see http://www.hiddentao.com/archives/2011/11/07/how-to-write-a-custom-widget-for-jquery-mobile/-->
+	<!-- widget factory UI -->
+	<Header>
+		<Title>jQuery UI Widget</Title>
+		<Author>Jeff Jacobson</Author>
+		<Shortcut>widget</Shortcut>
+		<Description>jQuery UI Widget</Description>
+		<SnippetTypes>
+			<SnippetType>Expansion</SnippetType>
+		</SnippetTypes>
+	</Header>
+	<Snippet>
+		<Declarations>
+			<Literal>
+				<ID>namespace</ID>
+				<ToolTip>Namespace ("ui" or "mobile")</ToolTip>
+				<Default>mobile</Default>
+			</Literal>
+			<Literal>
+				<ID>base</ID>
+				<ToolTip>Optional.  Base widget to inherit from.</ToolTip>
+				<Default>mobile.Widget, </Default>
+			</Literal>
+			<Literal>
+				<ID>name</ID>
+				<ToolTip>Widget Name</ToolTip>
+				<Default>myWidget</Default>
+			</Literal>
+		</Declarations>
+		<Code Language="JavaScript">
+			<![CDATA[$$.widget("$namespace$.$name$", $base$ {
+				options: {
+					// Put options here
+				},
+				/** Mandatory method - automatically called by jQuery Mobile to initialise the widget. */
+				_create: function () {
+						var $$this = this;
+						
+						return this;
+				},
+				_setOption: function(key, value) {
+					var $$this = this;
+					// Put custom code here
+					$$this._super();
+					return this;
+				},
+				_destroy: function () {
+						// $$.Widget.prototype.destroy.apply(this, arguments);
+						this._super();
+						return this;
+				}
+		});]]></Code>
+	</Snippet>
 </CodeSnippet>
